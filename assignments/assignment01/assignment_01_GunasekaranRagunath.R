@@ -76,7 +76,7 @@ student02 <- c(77.2, 88.9)
 student03 <- c(66.3, 87.9)
 
 students_combined <- rbind(student01,student02,student03)
-students_combined
+
 
 grades <- matrix(students_combined, byrow = FALSE, nrow = 3) 
 
@@ -155,6 +155,7 @@ head(ringbearers_df)
 ## 2. https://rdrr.io/r/base/slice.index.html
 ## 3. https://statisticsglobe.com/cbind-r-command-example/
 ## 4. https://www.statmethods.net/management/sorting.html
+
 
 
 
