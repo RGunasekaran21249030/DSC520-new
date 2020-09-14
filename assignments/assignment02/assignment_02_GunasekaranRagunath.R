@@ -43,7 +43,7 @@ excel_sheets("data/G04ResultsDetail2004-11-02.xls")
 ## The header is in the second row, so make sure to skip the first row
 ## Examine the structure of `voter_turnout_df1` using `str()`
 
-voter_turnout_df1 <- read_excel("data/G04ResultsDetail2004-11-02.xls")
+voter_turnout_df1 <- read_excel("data/G04ResultsDetail2004-11-02.xls",sheet="Voter Turnout",skip = 1)
 str(voter_turnout_df1)
 
 ## Using the `read_excel()` function, read the Voter Turnout sheet
