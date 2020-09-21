@@ -13,6 +13,7 @@ setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
 # Load the data from csv file to data set
 acs_2014 <- read.csv("Data/acs-14-1yr-s0201.csv")
 str(acs_2014)
+summary(acs_2014)
 nrow(acs_2014)
 ncol(acs_2014)
 #**************************************************************************************************
