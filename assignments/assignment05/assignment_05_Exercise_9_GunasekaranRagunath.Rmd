@@ -1,0 +1,152 @@
+--- 
+title: "ASSIGNMENT 5 - Exercise 9: Student Survey"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+bibliography: bibliography.bib
+---
+
+
+```{r dataframe code, include=FALSE}
+library("pander")
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+student_sur_df <- read.csv("data/student-survey.csv")
+show(student_sur_df)
+str(student_sur_df)
+
+```
+
+## a. Use R to calculate the covariance of the Survey variables and provide an explanation of why you would use this calculation and what the results indicate.
+
+```{r student_sur_df_a}
+# Covariance of the Survey variables
+cov(student_sur_df)
+# covariance between the Survey variables - TimeReading and TimeTV
+cov(student_sur_df$TimeReading,student_sur_df$TimeTV)
+# covariance between the Survey variables - TimeReading and Happiness
+cov(student_sur_df$TimeReading,student_sur_df$Happiness)
+# covariance between the Survey variables - TimeReading and Gender
+cov(student_sur_df$TimeReading,student_sur_df$Gender)
+# covariance between the Survey variables - TimeTV and Happiness
+cov(student_sur_df$TimeTV,student_sur_df$Happiness)
+# covariance between the Survey variables - TimeTV and Gender
+cov(student_sur_df$TimeTV,student_sur_df$Gender)
+# covariance between the Survey variables - Happiness and Gender
+cov(student_sur_df$Happiness,student_sur_df$Gender)
+# Covariance of the Survey variables in table format
+pander(cov(student_sur_df), caption ="Covariance of the Survey variables")
+```
+
+
+## a. Conclusion:
+As per Covariance between Student Survey variables, 
+
+1. Positive Values indicate more related with variables each other. Happiness and Time TV are more related (+114.4)
+
+2. Negative Values indicate opposite related with variables each other. Reading and Time TV are more opposite related (-20.36)
+
+
+## b. Examine the Survey data variables. What measurement is being used for the variables? Explain what effect changing the measurement being used for the variables would have on the covariance calculation. Would this be a problem? Explain and provide a better alternative if needed.
+
+```{r student_sur_df_b}
+# Examine the Survey data variables
+str(student_sur_df)
+head(student_sur_df)
+
+# Calculate Covariance, Variance, COrrelation  for variables
+cov(student_sur_df)
+cor(student_sur_df)
+var(student_sur_df)
+```
+## b. Conclusion
+
+# 1. What measurement is being used for the variables? 
+
+  As per str(student_sur_df), we have seen TimerReading, TimeTV,Gender are Integer and Happiness in Decimal. ( double)
+  Hence Survey data has 2 formats.
+
+# 2. Explain what effect changing the measurement being used for the variables would have on the covariance calculation. Would this be a problem? Explain and provide a better alternative if needed
+
+As per str(student_sur_df), The survey data is coming in 2 formats.As per data, 
+   1. Time Reading  --> Time Reading in Hours
+   2. Time TV       --> Time TV in Minutes
+   3. Happiness     --> Happiness in Percentage
+   4. Gender        --> Male or Female
+
+I used both covariance and Variance and see that same results. 
+
+
+## c.  Choose the type of correlation test to perform, explain why you chose this test, and make a prediction if the test yields a positive or negative correlation?
+
+I want to perform both positive and negative correlation test. Also I want to choose Happiness, Since it has both positive and negative value with other variables. 
+
+## Perform a correlation analysis of:
+All variables
+A single correlation between two a pair of the variables
+Repeat your correlation test in step 2 but set the confidence interval at 99%
+Describe what the calculations in the correlation matrix suggest about the relationship between the variables. Be specific with your explanation.
+
+```{r student_sur_df_d}
+# All variables
+pander(cor(student_sur_df), caption ="Correlation of the all Survey variables")
+
+#A single correlation between two a pair of the variables
+cor(student_sur_df$TimeReading,student_sur_df$Happiness, method=c("spearman"))
+cor(student_sur_df$TimeReading,student_sur_df$Happiness, method=c("pearson"))
+cor(student_sur_df$TimeReading,student_sur_df$Happiness, method=c("kendall"))
+
+cor(student_sur_df$TimeTV,student_sur_df$Happiness, method=c("kendall"))
+cor(student_sur_df$TimeTV,student_sur_df$Happiness, method=c("pearson"))
+cor(student_sur_df$TimeTV,student_sur_df$Happiness, method=c("kendall"))
+
+#Repeat your correlation test in step 2 but set the confidence interval at 99%
+cor.test(student_sur_df$TimeReading,student_sur_df$Happiness, conf.level = 0.99)
+cor.test(student_sur_df$TimeTV,student_sur_df$Happiness, conf.level = 0.99)
+
+```
+## Describe what the calculations in the correlation matrix suggest about the relationship between the variables. Be specific with your explanation.
+
+confidence interval/correlation coefficient at 99% 
+Reading -0.8801821 0.4176242 TV -0.1570212 0.9306275 
+
+sample estimates/correlation coefficient 
+Reading -0.4348663 
+TV 0.636556
+
+
+## e.  Calculate the correlation coefficient and the coefficient of determination, describe what you conclude about the results.
+
+```{r student_sur_df_e}
+corvalue <- cor(student_sur_df$TimeReading,student_sur_df$Happiness)
+corvalue
+
+corvalue2 <- corvalue ^ 2
+corvalue2
+```
+
+
+## f. Based on your analysis can you say that watching more TV caused students to read less? Explain.
+
+```{r student_sur_df_f}
+cor.test(student_sur_df$TimeReading,student_sur_df$TimeTV)
+```
+
+## g.  Pick three variables and perform a partial correlation, documenting which variable you are “controlling”. Explain how this changes your interpretation and explanation of the results.
+
+As we know, correlation between happiness and watching tv is 0.4052035, but after gender addition this changed.
+
+
+
+# References
+
+1.  Lander, J. P. 2014. R for Everyone: Advanced Analytics and Graphics. Addison-Wesley Data and Analytics Series. Addison-Wesley. https://books.google.com/books?id=3eBVAgAAQBAJ.
+
+2.  R Core Team. 2020. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. https://www.R-project.org/.
+
+3.  Xie, Yihui. 2016. Bookdown: Authoring Books and Technical Documents with R Markdown. Boca Raton, Florida: Chapman; Hall/CRC. https://github.com/rstudio/bookdown.
+
+4.  https://bookdown.org/yihui/rmarkdown-cookbook
+
