@@ -3,8 +3,8 @@ title: "ASSIGNMENT 5 - Exercise 9: Student Survey"
 author: "Ragunath Gunasekaran"
 date: "`r Sys.Date()`"
 output:
-  word_document: default
   pdf_document: default
+  word_document: default
   html_document: default
 bibliography: bibliography.bib
 ---
@@ -132,7 +132,17 @@ corvalue2
 
 ```{r student_sur_df_f}
 cor.test(student_sur_df$TimeReading,student_sur_df$TimeTV)
+
+readtv_corvalue <- cor(student_sur_df$TimeReading,student_sur_df$TimeTV)
+readtv_corvalue
+
+readtv_corvalue2 <- readtv_corvalue ^ 2
+readtv_corvalue2
+
 ```
+
+# Sample cor between Reading and Tv is -0.8830677(Oposite). So we can say that  more TV caused students to read less 
+
 
 ## g.  Pick three variables and perform a partial correlation, documenting which variable you are “controlling”. Explain how this changes your interpretation and explanation of the results.
 
@@ -149,4 +159,8 @@ As we know, correlation between happiness and watching tv is 0.4052035, but afte
 3.  Xie, Yihui. 2016. Bookdown: Authoring Books and Technical Documents with R Markdown. Boca Raton, Florida: Chapman; Hall/CRC. https://github.com/rstudio/bookdown.
 
 4.  https://bookdown.org/yihui/rmarkdown-cookbook
+
+5. https://www.statmethods.net/stats/correlations.html
+
+6. https://datascience.stackexchange.com/questions/64260/pearson-vs-spearman-vs-kendall
 
