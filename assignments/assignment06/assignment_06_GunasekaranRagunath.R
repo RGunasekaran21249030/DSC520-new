@@ -19,7 +19,6 @@ summary(age_lm)
 
 ## Creating predictions using `predict()`
 age_predict_df <- data.frame(earn = predict(age_lm, heights_df), age=heights_df$age)
-age_predict_df <- data.frame(earn = predict(age_lm, heights_df), age=heights_df$age)
 summary(age_predict_df)
 
 ## Plot the predictions against the original data
