@@ -20,6 +20,8 @@ predicted_df <- data.frame(
   age=heights_df$age, sex=heights_df$sex
   )
 
+# View the summary of your model
+summary(predicted_df)
 
 ## Compute deviation (i.e. residuals)
 
@@ -28,10 +30,10 @@ mean_earn <- mean(heights_df$earn)
 sst <- sum((mean_earn - heights_df$earn)^2)
 
 ## Corrected Sum of Squares for Model
-ssm <- sum((mean_earn - age_predict_df$earn)^2)
+ssm <- sum((mean_earn - predicted_df$earn)^2)
 
 ## Residuals
-residuals <- heights_df$earn - age_predict_df$earn
+residuals <- heights_df$earn - predicted_df$earn
 
 ## Sum of Squares for Error
 sse <- sum(residuals^2)
@@ -40,7 +42,7 @@ sse <- sum(residuals^2)
 r_squared <- ssm/sst
 
 ## Number of observations
-n <- length(coefficients(age_lm))
+n <- length(coefficients(earn_lm))
 
 ## Number of regression parameters
 p <- 2
