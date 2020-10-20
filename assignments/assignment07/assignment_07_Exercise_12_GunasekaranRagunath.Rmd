@@ -1,0 +1,279 @@
+--- 
+title: "ASSIGNMENT 7 - Exercise 12: Housing Data"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r dataframe code, include=FALSE}
+## Set the working directory to project root folder containing the `data` directory
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+library(readxl)
+housing_df <- read_excel("data/week-7-housing.xlsx", sheet = "Sheet2")
+```
+
+a. Explain why you chose to remove data points from your ‘clean’ dataset.
+
+Data points like sale_reason, sale warning, Building_grade, sale_instrument and Etc do not provide proper detail to the housing data Analytics or provide any insights to correlation.
+--------------------------------------------------------------------------------
+b. Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price and several additional predictors of your choice. Explain the basis for your additional predictor selections.
+
+```{r b1}
+squarefeet_lm <- lm(`Sale Price` ~ sq_ft_lot, housing_df)
+```
+
+```{r b2}
+
+SalePrice_lm <-  lm(`Sale Price` ~ sq_ft_lot + year_built + square_feet_total_living + bedrooms, housing_df)
+
+```
+Show in New WindowClear OutputExpand/Collapse Output
+Call:
+lm(formula = `Sale Price` ~ sq_ft_lot + year_built + square_feet_total_living + 
+    bedrooms, data = housing_df)
+
+Coefficients:
+             (Intercept)                 sq_ft_lot                year_built  square_feet_total_living  
+              -5.333e+06                 2.729e-01                 2.801e+03                 1.717e+02  
+                bedrooms  
+              -9.085e+03  
+
+--------------------------------------------------------------------------------
+
+1.  Bedrooms - Sale Price increases when square feet of the lot increases 
+2.  Bedrooms - Sale Price increases when more number of bedrooms in the house
+3.  Year Built - Sale Price may decrease when the year built decrese ( older )of the property
+4.  Total Square Foot - Sale Price may increase when more total square feet in the living area
+
+--------------------------------------------------------------------------------
+c. Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics? Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?
+  
+  ```{r c}
+
+summary(squarefeet_lm)
+
+```
+
+R-squared: 0.01435, Adjusted R-squared: 0.01428
+
+A higher R-squared value indicates a higher amount of variability being explained by our model. The R-squared value is a measure of variability in the outcome obtained by the predictors.1.435% of the variation in Sale Price.  ( Source - Ref 6)
+ 
+The Adjusted R-Squared provides just 0.01% variance, The cross-validity is extremely good.
+--------------------------------------------------------------------------------
+
+```{r c2}
+
+summary(SalePrice_lm)
+
+```
+
+Multiple R-squared:  0.2202,	Adjusted R-squared:   0.22
+The value for R-squared increases to 22.2% of the variance in the Sale Price.
+
+--------------------------------------------------------------------------------
+d. Considering the parameters of the multiple regression model you have created. What are the standardized betas for each parameter and what do the values indicate?
+  
+  ```{r d}
+library(QuantPsyc)
+lm.beta(SalePrice_lm)
+```
+standardized regression coefficients to objects created by lm
+
+sq_ft_lot - Sale Price increases by 0.03842553 SD   ( + correlation)
+year_built  - Sale Price increases by 0.11928935 SD ( + correlation)
+square_feet_total_living - Sale Price increases by 0.42036390 SD ( + correlation)
+bedrooms  - Sale Price decreases by 0.01968450 SD   ( - correlation)
+
+--------------------------------------------------------------------------------
+
+e. Calculate the confidence intervals for the parameters in your model and explain what the results indicate.
+
+```{r e}
+
+confint(SalePrice_lm)
+
+```
+
+confint is a generic function. The default method assumes normality, and needs suitable coef and vcov methods to be available
+(Source - Ref 5)
+                                 2.5 %        97.5 %
+(Intercept)              -6.125803e+06 -4.539774e+06
+sq_ft_lot                 1.569387e-01  3.889127e-01
+year_built                2.403070e+03  3.199472e+03
+square_feet_total_living  1.630620e+02  1.804098e+02
+bedrooms                 -1.801844e+04 -1.525239e+02
+
+Square Feet of total living area and bedrooms have confidence intervals are close, Representative of the true population values.
+--------------------------------------------------------------------------------
+
+f. Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.
+
+```{r f}
+anova(squarefeet_lm, SalePrice_lm)
+
+```
+Considering the Values of 1131.6 < 2.2e-16, the multiple regression model is better fit than the Linear regression model.
+--------------------------------------------------------------------------------
+
+g. Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.
+
+```{r g}
+
+SalePrice_DF <- as.data.frame(resid(SalePrice_lm))
+SalePrice_DF$residuals <- resid(SalePrice_lm)
+SalePrice_DF$standardized.residuals <- rstandard(SalePrice_lm)
+SalePrice_DF$studentized.residuals <- rstudent(SalePrice_lm)
+SalePrice_DF$cooks.distance <- cooks.distance(SalePrice_lm)
+SalePrice_DF$dfbeta <- dfbeta(SalePrice_lm)
+SalePrice_DF$dffit <- dffits(SalePrice_lm)
+SalePrice_DF$leverage <- hatvalues(SalePrice_lm)
+SalePrice_DF$covariance.ratios <- covratio(SalePrice_lm)
+head(SalePrice_DF, 10)
+
+```
+--------------------------------------------------------------------------------
+
+h. Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+
+```{r h}
+
+SalePrice_DF$large.residuals <- SalePrice_DF$standardized.residuals > 2 | 
+SalePrice_DF$standardized.residuals < 2
+
+```
+--------------------------------------------------------------------------------
+
+i. Use the appropriate function to show the sum of large residuals.
+
+```{r i}
+
+sum(SalePrice_DF$large.residuals)
+
+```
+--------------------------------------------------------------------------------
+
+j. Which specific variables have large residuals (only cases that evaluate as TRUE)?
+
+```{r j}
+
+head(SalePrice_DF$large.residuals, 50)
+
+```
+--------------------------------------------------------------------------------
+
+k.Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
+
+```{r k}
+
+head(SalePrice_DF[SalePrice_DF$large.residuals, c("cooks.distance", "leverage", "covariance.ratios")], 10)
+
+```
+Zero cases are problematic
+
+l. Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
+--------------------------------------------------------------------------------
+
+
+```{r l}
+
+library(carData)
+library(car)
+
+dwt(SalePrice_lm)
+
+```
+
+The D-W Statistic Value is 0.5581258. The value is less than 1. So the assumption of independence is not met.
+
+--------------------------------------------------------------------------------
+
+m. Perform the necessary calculations to assess the assumption of no multicollinearity and state if the condition is met or not.
+
+```{r m}
+
+## assumption of no multicollinearity
+
+vif(SalePrice_lm)
+
+## calculate tolerance = 1 / VIF
+
+1/vif(SalePrice_lm)
+
+## Average VIF
+
+mean(vif(SalePrice_lm))
+
+```
+
+The VIF is less than 10 . no cause of concern.
+Tolerance is not below 0.2, no potential problem.
+
+So the assumption of no multicollinearity
+--------------------------------------------------------------------------------
+
+
+n. Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
+
+```{r n}
+
+## Standardized Residual (y)
+## Predicted (Fitted) Value (x)
+
+plot(dffits(SalePrice_lm), rstandard(SalePrice_lm), xlab = "Predicted (Fitted) Value", ylab = "Standardized Residual", main="Standardized Residual Vs Predicted (Fitted) Value")
+
+```
+
+
+```{r n1}
+## qqplot()
+## Predicted (Fitted) Value (x-axis)
+
+qqPlot(dffits(SalePrice_lm))
+
+```
+
+Q-Q Plot produced by the plot() function shows few data points deviate from the normality. 
+
+The two values:
+
+1. Data Point - 4649, 8377
+
+```{r n2}
+
+## hist()
+## Studentized Residual (x-axis)
+
+hist(SalePrice_DF$studentized.residuals, main = "Histogram of Studentized Residual")
+
+```
+
+Normal distribution - Right skewed.
+
+--------------------------------------------------------------------------------
+
+
+o.Overall, is this regression model unbiased? If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
+
+Yes. Regression model is unbiased whose Average VIF (1.480344) > 1.
+
+
+
+
+# References
+
+1.  Lander, J. P. 2014. R for Everyone: Advanced Analytics and Graphics. Addison-Wesley Data and Analytics Series. Addison-Wesley. https://books.google.com/books?id=3eBVAgAAQBAJ.
+
+2.  R Core Team. 2020. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. https://www.R-project.org/.
+
+3.  Xie, Yihui. 2016. Bookdown: Authoring Books and Technical Documents with R Markdown. Boca Raton, Florida: Chapman; Hall/CRC. https://github.com/rstudio/bookdown.
+
+4.  https://bookdown.org/yihui/rmarkdown-cookbook
+
+5. https://stat.ethz.ch/R-manual/R-devel/library/stats/html/confint.html
+
+6. https://www.analyticsvidhya.com/blog/2020/07/difference-between-r-squared-and-adjusted-r-squared/
+
