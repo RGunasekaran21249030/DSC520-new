@@ -1,0 +1,86 @@
+--- 
+title: "ASSIGNMENT 8 - Exercise 13: Fit a Logistic Regression Model to the Thoracic Surgery Binary Dataset"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+
+```{r datasetpopulation, include=FALSE}
+## Set the working directory to project root folder containing the `data` directory
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+library(foreign)
+# Load the data from arff file to Dataset Surgery_dataset
+Surgery_dataset <- read.arff("data/ThoraricSurgery.arff")
+```
+
+##  Data Analysis Analysis
+
+```{r plot, echo=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(Surgery_dataset, mapping = aes(x = DGN, y = PRE14)) + geom_point(mapping = aes(colour = Risk1Yr)) + xlab("Weakness before Surgery") + ylab("Diagnosis") 
+
+```
+
+##  Binary logistic regression model to the data set 
+a. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+
+
+```{r plot1, echo=FALSE, message=FALSE}
+TFRAC = 0.25
+index = sample(1:nrow(Surgery_dataset), TFRAC * nrow(Surgery_dataset))
+
+test.data <- Surgery_dataset[index,]
+train.data <- Surgery_dataset[-index,]
+
+# Logistic Regression - Generalized Linear Models
+# glm(formula, family=familytype(link=linkfunction), data=)
+
+Surgery_dataset.glm <- glm(Risk1Yr ~ ., data = train.data, family = binomial)
+
+# Display the results
+summary(Surgery_dataset.glm)
+
+#confint(Surgery_dataset.glm)
+#exp(coef(Surgery_dataset.glm)) # exponentiated coefficients
+#exp(confint(Surgery_dataset.glm)) # 95% CI for exponentiated coefficients
+#predict(Surgery_dataset.glm, type="response") # predicted values
+#residuals(Surgery_dataset.glm, type="deviance") # residuals
+
+summary(Surgery_dataset.glm, censored=FALSE, scale=1,
+  extend=FALSE, rmean=getOption('survfit.rmean'))
+
+
+```
+
+## b. According to the summary, which variables had the greatest effect on the survival rate?
+
+DGNDGN8 had the greatest effect.
+
+
+```{r plot3, echo=FALSE, message=FALSE}
+library(MASS)
+a_vector <- rep(NA,9)
+cutoff <- c(.1, .15, .2,.25, .3, .35, .4, .45,.5)
+for(i in 1:9){
+  predictions <- ifelse(predict(Surgery_dataset.glm, test.data, type = "response")>cutoff[i],1,0)
+  prob <- (predict(Surgery_dataset.glm, test.data, type = "response"))
+  pred.mod <- predictions
+  pred.mod[which(pred.mod == 0)] <- "F"
+  pred.mod[which(pred.mod == 1)] <- "T"
+  a_vector[i] <- sum(diag(prop.table(table(predictions, test.data$Risk1Yr))))}
+show(a_vector)
+```
+
+## c. To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+
+The highest accuracy of the model which we achieved was around ~84%.
+
+
+
+# References
+1.  Generalized Linear Models,  Quick R by Datacamp - https://www.statmethods.net/advstats/glm.html
+2.  Thoracic Surgery by Meagan Londa - https://rpubs.com/melonda/190569
