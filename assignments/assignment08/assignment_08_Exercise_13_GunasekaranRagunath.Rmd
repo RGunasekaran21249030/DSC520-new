@@ -3,9 +3,9 @@ title: "ASSIGNMENT 8 - Exercise 13: Fit a Logistic Regression Model to the Thora
 author: "Ragunath Gunasekaran"
 date: "`r Sys.Date()`"
 output:
+  word_document: default
   pdf_document: default
   html_document: default
-  word_document: default
 ---
 
 
@@ -15,6 +15,7 @@ setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
 library(foreign)
 # Load the data from arff file to Dataset Surgery_dataset
 Surgery_dataset <- read.arff("data/ThoraricSurgery.arff")
+Surgery_dataset
 ```
 
 ##  Data Analysis Analysis
@@ -25,11 +26,10 @@ ggplot(Surgery_dataset, mapping = aes(x = DGN, y = PRE14)) + geom_point(mapping 
 
 ```
 
-##  Binary logistic regression model to the data set 
-a. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+##  a. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
 
 
-```{r plot1, echo=FALSE, message=FALSE}
+```{r summary, echo=FALSE, message=FALSE}
 TFRAC = 0.25
 index = sample(1:nrow(Surgery_dataset), TFRAC * nrow(Surgery_dataset))
 
@@ -60,10 +60,9 @@ summary(Surgery_dataset.glm, censored=FALSE, scale=1,
 
 DGNDGN8 had the greatest effect.
 
-
-```{r plot3, echo=FALSE, message=FALSE}
+```{r model_accuracy, echo=FALSE, message=FALSE}
 library(MASS)
-a_vector <- rep(NA,9)
+acc_vector <- rep(NA,9)
 cutoff <- c(.1, .15, .2,.25, .3, .35, .4, .45,.5)
 for(i in 1:9){
   predictions <- ifelse(predict(Surgery_dataset.glm, test.data, type = "response")>cutoff[i],1,0)
@@ -71,8 +70,8 @@ for(i in 1:9){
   pred.mod <- predictions
   pred.mod[which(pred.mod == 0)] <- "F"
   pred.mod[which(pred.mod == 1)] <- "T"
-  a_vector[i] <- sum(diag(prop.table(table(predictions, test.data$Risk1Yr))))}
-show(a_vector)
+  acc_vector[i] <- sum(diag(prop.table(table(predictions, test.data$Risk1Yr))))}
+show(acc_vector)
 ```
 
 ## c. To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
