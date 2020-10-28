@@ -1,0 +1,130 @@
+--- 
+title: "ASSIGNMENT 8 - Exercise 14: Fit a Logistic Regression Model to Previous Dataset"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+
+```{r datasetpopulation, include=FALSE}
+## Set the working directory to project root folder containing the `data` directory
+
+# Load the data from arff file to Dataset Surgery_dataset
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+binaryclass_ds <- read.csv("data/binary-classifier-data.csv")
+head(binaryclass_ds)
+str(binaryclass_ds)
+summary(binaryclass_ds)
+```
+
+##  Data Analysis Analysis
+
+```{r dataanalysis, echo=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(binaryclass_ds, mapping = aes(x = x, y = y)) + geom_point(mapping = aes(colour = y)) 
+```
+
+##  a.What is the accuracy of the logistic regression classifier?
+
+
+```{r logisticRegression, echo=FALSE, message=FALSE}
+# Logistic Regression - Generalized Linear Models
+# glm(formula, family=familytype(link=linkfunction), data=)
+
+# to find the accuracy of regression - Generating 2 liner models by using GLM
+
+# for both x and y variables - predictors
+model1_xy <- glm(label ~ x + y, data = binaryclass_ds, family = "binomial")
+
+# for  x variables - predictor
+model1_x  <- glm(label ~ x, data = binaryclass_ds, family = "binomial")
+
+
+# Display the results
+summary(model1_xy)
+summary(model1_x)
+
+#confint(model1_xy)
+#exp(coef(model1_xy)) # exponentiated coefficients
+#exp(confint(model1_xy)) # 95% CI for exponentiated coefficients
+#predict(model1_xy, type="response") # predicted values
+#residuals(model1_xy, type="deviance") # residuals
+
+#confint(model1_x)
+#exp(coef(model1_x)) # exponentiated coefficients
+#exp(confint(model1_x)) # 95% CI for exponentiated coefficients
+#predict(model1_x, type="response") # predicted values
+#residuals(model1_x, type="deviance") # residuals
+
+
+#  of the logistic regression classifier 
+
+# Source - Ref 2 ( ROCR - package for evaluating and visualizing classifier performance)
+library(ROCR)
+model1_Prediction <- predict(model1_xy, newdata=binaryclass_ds, type="response")
+predicted <- prediction(model1_Prediction, binaryclass_ds$label)
+
+# Source - Ref 3 ( ROCR - package for evaluating and visualizing classifier performance)
+accuracyModel <- performance(predicted, measure = "auc")
+accuracyModel <- accuracyModel@y.values[[1]]
+accuracyModel
+
+
+```
+
+## b. How does the accuracy of the logistic regression classifier compare to the nearest neighbors algorithm?
+
+Source - Ref 5 - In theory, nearest neighbors algorithm KNN is better than linear regression. The logistic regression classifier accuracy is 57% and KNN Accuracy is 74%.
+
+
+```{r model_accuracy, echo=FALSE, include=FALSE}
+library(class)
+nor <-function(x) { (x -min(x))/(max(x)-min(x))   }
+BinaryClassifier_dfknn <- as.data.frame(lapply(binaryclass_ds[,1:1],nor))
+set.seed(12)
+
+#selection with random of 75% data.
+BinaryClassifier_dfknn1 <- sample(1:nrow(binaryclass_ds),size=nrow(binaryclass_ds)*0.9,replace = FALSE) 
+
+
+#90% dataset - training
+dt_Training1 <- BinaryClassifier_dfknn[BinaryClassifier_dfknn1,]
+
+#25% data - testing
+dt_testsample1 <- BinaryClassifier_dfknn[-BinaryClassifier_dfknn1,]
+
+
+#75% dataset - training for variable y
+dt_Training2 <- BinaryClassifier_dfknn[BinaryClassifier_dfknn1,drop=TRUE]
+
+#25% data - testing  for variable y
+dt_testsample2 <- BinaryClassifier_dfknn[-BinaryClassifier_dfknn1,drop=TRUE]
+
+#Build nearest neighbors model using k values of 32
+
+modelbinarydfknn <- knn(data.frame(dt_Training1), data.frame(dt_testsample1), cl=dt_Training2, k=32)
+model2binarydfknn <- knn(data.frame(dt_Training1), data.frame(dt_testsample1), cl=dt_Training2, k=33)
+
+#Calculate the proportion of correct classification for k = 32
+Accuracyofmodel1knn <- 100 * sum(dt_Training2 == modelbinarydfknn)/NROW(dt_testsample2)
+Accuracyofmodel2knn <- 100 * sum(dt_Training2 == model2binarydfknn)/NROW(dt_testsample2)
+
+```
+
+## c. Why is the accuracy of the logistic regression classifier different from that of the nearest neighbors?
+
+Based on the Results, KNN is deterministic algorithm and logistic regression is a stochastic algorithm. 
+
+KNN Alogrithm need to verify neighbors, Hence it's a non-parametric but Logitic Regression is requires parameter.
+KNN is little complex when compare to Logistic Regression, Hence the performance of operation may slow in KNN.
+
+
+# References
+1.  Generalized Linear Models,  Quick R by Datacamp - https://www.statmethods.net/advstats/glm.html
+2.  http://ipa-tys.github.io/ROCR/
+3.  https://www.r-bloggers.com/2016/11/calculating-auc-the-area-under-a-roc-curve/
+4.  https://towardsdatascience.com/k-nearest-neighbors-algorithm-with-examples-in-r-simply-explained-knn-1f2c88da405c
+5.  https://towardsdatascience.com/comparative-study-on-classic-machine-learning-algorithms-24f9ff6ab222#:~:text=KNN%20is%20a%20non%2Dparametric%20model%2C%20where%20LR%20is%20a,can%20only%20output%20the%20labels.
