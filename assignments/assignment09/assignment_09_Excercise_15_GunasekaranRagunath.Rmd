@@ -1,0 +1,187 @@
+--- 
+title: "ASSIGNMENT 9 - Exercise 15: Introduction to Machine Learning"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+
+## Footnote
+This is a Footnote test.
+
+## Citations
+
+* R for Everyone
+* Discovering Statistics Using R
+
+
+##  a. Plot the data from each dataset using a scatter plot
+
+```{r dataframe datasets, include=FALSE}
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+# The first dataset (found in binary-classifier-data.csv) contains three variables; label, x, and y. 
+#The label variable is either 0 or 1 and is the output we want to predict using the x and y variables. 
+bin_class_data <- read.csv("data/binary-classifier-data.csv")
+
+#The second dataset (found in trinary-classifier-data.csv) is similar to the first dataset except that the label variable can be 0, 1, or 2.
+tri_class_data <- read.csv("data/trinary-classifier-data.csv")
+```
+
+
+Binary classifier Data - Scatter plot displays the relationship between x and y variables
+
+```{r Scatterbinclassplot, echo=FALSE, message=FALSE}
+library(ggplot2)
+
+scatter_bin_class_data <- ggplot(bin_class_data, aes(x, y))
+# Adding geom_point and Linear Regression line with considering Labels
+scatter_bin_class_plot <- scatter_bin_class_data + geom_point() + geom_smooth(method = "lm", aes(fill = label), alpha = 0.1) + labs(x = "Value of X", y = "Value of y", colour = "label")
+#plot the results - binary classifier dataset
+plot(scatter_bin_class_plot)
+
+```
+
+
+Trinary classifier Data -  Scatter plot displays the relationship between x and y variables
+
+
+```{r Scattertriclassplot, echo=FALSE, message=FALSE}
+
+scatter_tri_class_data <- ggplot(tri_class_data, aes(x, y))
+# Adding geom_point and Linear Linear Regression line with considering Labels
+scatter_tri_class_plot <- scatter_tri_class_data + geom_point() + geom_smooth(method = "lm", aes(fill = label), alpha = 0.1) + labs(x = "Value of X", y = "Value of y", colour = "label")
+#plot the results - trinary classifier dataset
+plot(scatter_tri_class_plot)
+
+```
+
+
+## Fitting a model is when you use the input data to create a predictive model.Accuracy is simply the percentage of how often the model predicts the correct result. If the model always predicts the correct result, it is 100% accurate. If the model always predicts the incorrect result, it is 0% accurate.
+
+
+```{r dataframe databintriknn, include=FALSE}
+# Data Normalization
+binary_data_nor <- bin_class_data[, c("x", "y")]
+trinary_data_nor <- tri_class_data[, c("x", "y")]
+
+# Create train and test datasets for binary data
+set.seed(111)
+dat.binarydataset <- sample(1:nrow(binary_data_nor),size=nrow(binary_data_nor)*0.7,replace = FALSE) #random selection of 70% data.
+ 
+train.binarydataset <- bin_class_data[dat.binarydataset,] # 70% training data
+test.binarydataset <- bin_class_data[-dat.binarydataset,] # remaining 30% test data
+
+
+# Create train and test datasets for trinary data
+set.seed(123)
+dat.trinarydataset <- sample(1:nrow(trinary_data_nor),size=nrow(trinary_data_nor)*0.7,replace = FALSE) #random selection of 70% data.
+ 
+train.trinarydataset <- tri_class_data[dat.trinarydataset,] # 70% training data
+test.trinarydataset <- tri_class_data[-dat.trinarydataset,] # remaining 30% test data
+
+
+train.binarydatasetlabels <- bin_class_data[dat.binarydataset,1,drop=TRUE]
+test.binarydatasetlabels <-bin_class_data[-dat.binarydataset,1,drop=TRUE]
+
+#Creating seperate dataframe for trinary label data
+train.trinarydatasetlabels <- tri_class_data[dat.trinarydataset,1,drop=TRUE]
+test.trinarydatasetlabels <-tri_class_data[-dat.trinarydataset,1,drop=TRUE]
+
+
+```
+
+Number of observations for Binary Dataset - Train, Test
+
+```{r observationsbin, echo=FALSE, message=FALSE}
+##  Find the number of observations in binary train data
+NROW(train.binarydataset) 
+
+#  Find the number of observations in binary test data
+NROW(test.binarydataset)
+
+#  Find the number of observations in binary train data
+NROW(train.binarydatasetlabels)
+
+#  Find the number of observations in binary test data
+NROW(test.binarydatasetlabels)
+
+```
+
+Number of observations for Binary Dataset - Train, Test
+
+```{r observationstri, echo=FALSE, message=FALSE}
+
+# Find the number of observations in trinary train data
+NROW(train.trinarydataset) 
+
+#  Find the number of observations in trinary test data
+NROW(test.trinarydataset)
+
+##  Find the number of observations in trinary train data
+NROW(train.trinarydatasetlabels) 
+
+#  Find the number of observations in trinary test data
+NROW(test.trinarydatasetlabels)
+
+```
+
+## b. Fiting a k nearest neighbors model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
+
+Binary Dataset - k nearest neighbors model
+
+```{r plotbintriknnbin, echo=FALSE, message=FALSE}
+#Build models with different K values for binary data
+#Store K values and accuracy values in a dataframe for different k values
+library(class)
+list2 <- list(3,5,10,15,20,25)
+i=1
+k.binaryaccurcy=1
+for (i in list2){
+    knn.mod <- knn(train=train.binarydataset, test=test.binarydataset, cl=train.binarydatasetlabels, k=i)
+    k.binaryaccurcy[i] <- 100 * sum(test.binarydatasetlabels == knn.mod)/NROW(test.binarydatasetlabels)
+    k=i
+    cat(k,'=',k.binaryaccurcy[i],'')
+    }
+    
+#  Plot Accuracy values with k values
+plot(k.binaryaccurcy, type="b", xlab="K- Value",ylab="Accuracy level in YAxis")
+
+```
+
+Trinary Dataset - k nearest neighbors model
+
+```{r plotbintriknntri, echo=FALSE, message=FALSE}
+#Store K values and accuracy values in a dataframe for different k values
+library(class)
+list3 <- list(3,5,10,15,20,25)
+j=1
+k.trinaryaccurcy=1
+for (j in list3){
+    knn.modtri <- knn(train=train.trinarydataset, test=test.trinarydataset, cl=train.trinarydatasetlabels, k=j)
+    k.trinaryaccurcy[j] <- 100 * sum(test.trinarydatasetlabels == knn.modtri)/NROW(test.trinarydatasetlabels)
+    k=j
+    cat(k,'=',k.trinaryaccurcy[j],'')
+    }
+    
+    
+
+
+#  Plot Accuracy values with k values
+plot(k.trinaryaccurcy, type="b", xlab="K- Value in XAxis",ylab="Accuracy level in YAxis")
+```
+
+## c. Looking back at the plots of the data, do you think a linear classifier would work well on these datasets?
+
+By looking at the plots, I don't think Linear classifier would work well on these datasets since not seeing the linear combination of the characteristics.
+
+( As per Ref 5, Linear classifier achieves this by making a classification decision based on the value of a linear combination of the characteristics )
+
+# References
+1. Bernard Marr. (2016). Supervised V Unsupervised Machine Learning – What’s The Difference?
+2. Bernard Marr. (2016). What Is The Difference Between Artificial Intelligence And Machine Learning?
+3. Bernard Marr. (2016). What Is The Difference Between Deep Learning, Machine Learning and AI?
+4. http://rstudio-pubs-static.s3.amazonaws.com/515845_ac9b3e6ee0b14ede809e2ce59dd43830.html
+5. https://en.wikipedia.org/wiki/Linear_classifier
