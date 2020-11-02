@@ -1,0 +1,144 @@
+---
+title: 'Assignment 9gw : Exercise 16: Clustering'
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+
+## Footnote
+This is a Footnote test.
+
+## Citations
+
+* R for Everyone
+* Discovering Statistics Using R
+
+##  Data Load - Data from CSV file load into Dataframe
+
+```{r dataframe code, include=FALSE}
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+clusteringdata_df <- read.csv("data/clustering-data.csv")
+show(clusteringdata_df)
+```
+
+Structure Of An Arbitrary R Object
+
+```{r clusteringdata_df_strdetails, echo=FALSE, message=FALSE}
+# Compactly Display The Structure Of An Arbitrary R Object -- Source 5
+str(clusteringdata_df)
+```
+
+##  Scatter plot of clustering dataset by using ggplot2
+
+```{r clustering_plot, echo=FALSE, message=FALSE}
+#Ref - Source 2 and taken from previous assignment code
+library(ggplot2)
+
+## Ordinary plot
+plot(clusteringdata_df)
+
+## Scattered Plot for cluserting data
+scatterclustering_data <- ggplot(clusteringdata_df, aes(x, y))
+scatterclustering_data <- scatterclustering_data + geom_point() +
+  geom_smooth(method = 'lm', se = FALSE) 
+
+plot(scatterclustering_data)
+
+```
+
+Observation : Based on this plot, I have seen various clusters and the high groups are 7 and few small groups are there too. 
+
+
+## Fiting the dataset using the k-means algorithm from k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
+
+##  Cluster Data for each K Value
+#Ref - Source 5,4,6
+```{r dataframe clusteringdata_df.kmeanscenters, echo=FALSE}
+
+library("cluster")
+
+clusteringdata_df.k2means <- kmeans(clusteringdata_df, centers=2, nstart = 25)
+clusteringdata_df.k3means <- kmeans(clusteringdata_df, centers=3, nstart = 25)
+clusteringdata_df.k4means <- kmeans(clusteringdata_df, centers=4, nstart = 25)
+clusteringdata_df.k5means <- kmeans(clusteringdata_df, centers=5, nstart = 25)
+clusteringdata_df.k6means <- kmeans(clusteringdata_df, centers=6, nstart = 25)
+clusteringdata_df.k7means <- kmeans(clusteringdata_df, centers=7, nstart = 25)
+clusteringdata_df.k8means <- kmeans(clusteringdata_df, centers=8, nstart = 25)
+clusteringdata_df.k9means <- kmeans(clusteringdata_df, centers=9, nstart = 25)
+clusteringdata_df.k10means <- kmeans(clusteringdata_df, centers=10, nstart = 25)
+clusteringdata_df.k11means <- kmeans(clusteringdata_df, centers=11, nstart = 25)
+clusteringdata_df.k12means <- kmeans(clusteringdata_df, centers=12, nstart = 25)
+
+clusteringdata_df.k2means$centers
+clusteringdata_df.k3means$centers
+clusteringdata_df.k4means$centers
+clusteringdata_df.k5means$centers
+clusteringdata_df.k6means$centers
+clusteringdata_df.k7means$centers
+clusteringdata_df.k8means$centers
+clusteringdata_df.k9means$centers
+clusteringdata_df.k10means$centers
+clusteringdata_df.k11means$centers
+clusteringdata_df.k12means$centers
+```
+
+
+#install.package("factoextra")
+
+
+# Plots Comparision
+#Ref Source -6,3,7
+
+```{r dataframe plot_clustering_kmeans, echo=FALSE}
+#install.packages("factoextra")
+library("factoextra")
+library("cluster")
+
+plot_clustering_k2 <- fviz_cluster(clusteringdata_df.k2means, geom = "point", data = clusteringdata_df) + ggtitle("k = 2")
+plot_clustering_k3 <- fviz_cluster(clusteringdata_df.k3means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 3")
+plot_clustering_k4 <- fviz_cluster(clusteringdata_df.k4means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 4")
+plot_clustering_k5 <- fviz_cluster(clusteringdata_df.k5means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 5")
+
+plot_clustering_k6 <- fviz_cluster(clusteringdata_df.k6means, geom = "point", data = clusteringdata_df) + ggtitle("k = 6")
+plot_clustering_k7 <- fviz_cluster(clusteringdata_df.k7means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 7")
+plot_clustering_k8 <- fviz_cluster(clusteringdata_df.k8means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 8")
+plot_clustering_k9 <- fviz_cluster(clusteringdata_df.k9means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 9")
+
+plot_clustering_k10 <- fviz_cluster(clusteringdata_df.k10means, geom = "point", data = clusteringdata_df) + ggtitle("k = 10")
+plot_clustering_k11 <- fviz_cluster(clusteringdata_df.k11means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 11")
+plot_clustering_k12 <- fviz_cluster(clusteringdata_df.k12means, geom = "point",  data = clusteringdata_df) + ggtitle("k = 12")
+
+#Ref - Source 6
+library(gridExtra)
+grid.arrange(plot_clustering_k2, plot_clustering_k3, plot_clustering_k4
+,plot_clustering_k5,plot_clustering_k6,plot_clustering_k7,plot_clustering_k8
+,plot_clustering_k9,plot_clustering_k10,plot_clustering_k11,plot_clustering_k12, nrow = 4)
+
+```
+
+## Average Silhouette Method
+#Ref Source -6,3,7
+
+```{r dataframe plot_clusteringkmeansdistance, echo=FALSE}
+#Ref - Source 6
+fviz_nbclust(x = clusteringdata_df,FUNcluster = kmeans, method = 'wss' )
+fviz_nbclust(clusteringdata_df, kmeans, method = "silhouette")
+```
+
+## Conclusion:
+A high average silhouette width indicates a good clustering.
+In my view, The disadvantage of K-means clustering is that need to specify cluster details.
+
+
+# References
+1.  Sejal Jaiswal. (2018). K-Means Clustering in R Tutorial
+2.  https://rpubs.com/dnchari/ggplot2
+3.  https://towardsdatascience.com/clustering-with-k-means-1e07a8bfb7ca
+4.  https://rpubs.com/dnchari/kmeans
+5.  https://www.youtube.com/watch?v=3GorGZgTTEk
+6.  https://rpubs.com/abdul_yunus/Kmeans_Clustering
+7.  https://cran.r-project.org/web/packages/factoextra/factoextra.pdf
