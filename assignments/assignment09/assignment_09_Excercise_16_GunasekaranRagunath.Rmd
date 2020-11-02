@@ -28,14 +28,13 @@ show(clusteringdata_df)
 Structure Of An Arbitrary R Object
 
 ```{r clusteringdata_df_strdetails, echo=FALSE, message=FALSE}
-# Compactly Display The Structure Of An Arbitrary R Object -- Source 5
 str(clusteringdata_df)
 ```
 
-##  Scatter plot of clustering dataset by using ggplot2
+##  Scatter plot of clustering dataset
 
-```{r clustering_plot, echo=FALSE, message=FALSE}
-#Ref - Source 2 and taken from previous assignment code
+```{r clusteringdata_df_plot, echo=FALSE, message=FALSE}
+
 library(ggplot2)
 
 ## Ordinary plot
@@ -89,7 +88,7 @@ clusteringdata_df.k12means$centers
 
 
 # Plots Comparision
-#Ref Source -6,3,7
+
 
 ```{r dataframe plot_clustering_kmeans, echo=FALSE}
 #install.packages("factoextra")
@@ -113,14 +112,12 @@ plot_clustering_k12 <- fviz_cluster(clusteringdata_df.k12means, geom = "point", 
 #Ref - Source 6
 library(gridExtra)
 grid.arrange(plot_clustering_k2, plot_clustering_k3, plot_clustering_k4
-,plot_clustering_k5,plot_clustering_k6,plot_clustering_k7,plot_clustering_k8
-,plot_clustering_k9,plot_clustering_k10,plot_clustering_k11,plot_clustering_k12, nrow = 4)
+,plot_clustering_k5, nrow = 4)
 
 ```
 
 ## Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
 
-#Ref Source -6,3,7
 
 ```{r dataframe plot_clusteringkmeansdistance, echo=FALSE}
 #Ref - Source 6
