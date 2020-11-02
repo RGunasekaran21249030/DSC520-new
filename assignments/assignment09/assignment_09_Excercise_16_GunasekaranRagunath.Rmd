@@ -1,5 +1,5 @@
 ---
-title: 'Assignment 9gw : Exercise 16: Clustering'
+title: 'Assignment 9 : Exercise 16: Clustering'
 author: "Ragunath Gunasekaran"
 date: "`r Sys.Date()`"
 output:
@@ -49,8 +49,6 @@ scatterclustering_data <- scatterclustering_data + geom_point() +
 plot(scatterclustering_data)
 
 ```
-
-Observation : Based on this plot, I have seen various clusters and the high groups are 7 and few small groups are there too. 
 
 
 ## Fiting the dataset using the k-means algorithm from k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
@@ -120,7 +118,8 @@ grid.arrange(plot_clustering_k2, plot_clustering_k3, plot_clustering_k4
 
 ```
 
-## Average Silhouette Method
+## Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
+
 #Ref Source -6,3,7
 
 ```{r dataframe plot_clusteringkmeansdistance, echo=FALSE}
@@ -129,9 +128,7 @@ fviz_nbclust(x = clusteringdata_df,FUNcluster = kmeans, method = 'wss' )
 fviz_nbclust(clusteringdata_df, kmeans, method = "silhouette")
 ```
 
-## Conclusion:
-A high average silhouette width indicates a good clustering.
-In my view, The disadvantage of K-means clustering is that need to specify cluster details.
+
 
 
 # References
