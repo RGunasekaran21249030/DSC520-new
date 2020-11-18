@@ -242,7 +242,7 @@ ggplot(data = avocado_dataset_region , aes(x = Region, y = Average_Price))+geom_
           
           1. Price - Organic Avocados were more expensive than conventional Avocados
           2. The minimum (0.76 USD) and maximum (2.09 USD) price
-          3. As expected, The average price is lower in winter Season, but price slowly increases in spring through summer                   Season,then it reach the peak. 
+          3. As expected, The average price is lower in winter Season, but price slowly increases in spring through summer Season,then it reach the peak. 
           4. From Fall back into the winter Season the price slowly declines
           5. Am concluding based on the above study, Season or weather impact the avocado price
 
@@ -316,6 +316,17 @@ After the detailed analysis of Avocados Price, Volume Analysis, I am curious to 
 
 
 ```{r LinerRegression}
+
+## Corelation ##
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Total_Volume)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Small_Hass)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Large_Hass)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$XLarge_Hass)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Total_Bags)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Small_Bags)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$Large_Bags)
+cor(avocado_dataset_usa$Average_Price, avocado_dataset_usa$XLarge_Bags)
+
 ## Linear Regression ##
 TotalVolume_lm = lm(Average_Price~Total_Volume, data = avocado_dataset_usa)
 summary(TotalVolume_lm)
