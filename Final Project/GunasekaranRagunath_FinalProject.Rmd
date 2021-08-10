@@ -1,0 +1,482 @@
+--- 
+title: "Avocado Price Prediction - Exploratory Data Analysis"
+author: "Ragunath Gunasekaran"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction 
+
+When I started this project, I learned that Avocado became America’s new favorite fruit and It is a “superfood”. Hass Avocado Board (HAB) helps to increase the consumption of Avocados. The study shows that Avocado Consumption per capita in the 90’s was 1.6 lbs but per capita is increased, as of 2017, Avocado Consumption per capita is 7.1 lbs.
+
+My Project intends to thoroughly exploratory data analysis of the avocado prices increase along with customer behavior. The Data comes from Kaggle which is provided by Hass Avocado Board website compiled into a one CSV file and the data contains from 2015 to 2018 Avocado Purchases in the USA. The Project also tries to analyze the price elasticity of demand and find the comparison of conventional and organic avocados since Organic consumption is increasing in recent days.
+
+I have chosen the fruit Avocado, but this approach can be extended to other food exploratory data analysis by using the Purchases/Sales Data.
+
+The below are research questions which we target to find the answers from the outcome of the EDA of this project.
+
+Is there any Linear relationship between volume and price?
+Which prices are more either Organic or conventional?
+How does the season impact the Sales of Avocado Sales?
+Can we meet the Supply-demand approach in economics? If there is enough demand for Avocado food, can prices be increased?
+How the price prediction impacts the Region? ( Example, near Port Access )
+How are the purchase increases by date?
+What is the USA Average price?
+
+
+# Data Preparation and Clean Up  
+
+At first step, I have loaded all the required libraries for this project ( ggplot2, tidyverse, etc ) and then loaded the source data from .csv file data to Dataset. I changed the formatting of data since this is important for all the Data Visualization and Calculation. while performing the Data Analysis, I noticed that Regions where avocados were sold/purchased were overlapped, and some regions contained the same name but listed differently. I also subset the Total U.S responded under the Region Variable. (Region variables from characters to factors )
+
+From the Date, I created a variable called Season - Spring, Summer, Fall, Winter and also a Month, Year variable.
+
+The Below are steps followed as part of Data Preparation
+
+Renamed the column Names - Average_Price, Total_Volume
+
+Date formatted for Visualization and linear methods
+
+Removed the white spaces in the Text fields – Region, Type, Type, etc
+
+Find any missing values exists in the Data frame - Date
+
+Avoid the missing values if any
+
+Unite the fields into one field wherever required.
+
+Used toupper/tolower make the columns into Upper if required.
+
+Added new Columns - Year, Month, Season
+
+Also before cleaning the data, I noticed that skewness existed.
+
+```{r RDataLoadInstallPakcages, echo=FALSE, include=FALSE}
+# Load Libraries
+library(ggplot2)
+library(lubridate)
+library(tibble)
+library(pander)
+library(dplyr)
+library(tidyverse)
+library(cowplot)
+library(FNN)
+
+## Load Data, Read File & Install Packages ##
+setwd("C:/Users/ragun/Documents/GitHub/dsc520-master/DSC520-new")
+avocado_dataset<-read.csv("data/avocado.csv", header=TRUE)
+
+# Dataframe Checks
+#head(avocado_dataset,20)
+#str(avocado_dataset)
+#summary(avocado_dataset)
+#class(avocado_dataset)
+#dim(avocado_dataset)
+
+```
+
+
+```{r RDataCleanUp, echo=FALSE, include=FALSE}
+## Renaming Columns as per Standard ##
+names(avocado_dataset)[3]<-"Average_Price"
+names(avocado_dataset)[4]<-"Total_Volume"
+names(avocado_dataset)[5]<-"Small_Hass"
+names(avocado_dataset)[6]<-"Large_Hass"
+names(avocado_dataset)[7]<-"XLarge_Hass"
+names(avocado_dataset)[8]<-"Total_Bags"
+names(avocado_dataset)[9]<-"Small_Bags"
+names(avocado_dataset)[10]<-"Large_Bags"
+names(avocado_dataset)[11]<-"XLarge_Bags"
+names(avocado_dataset)[12]<-"Type"
+names(avocado_dataset)[13]<-"Year"
+names(avocado_dataset)[14]<-"Region"
+# Date Formatting
+avocado_dataset[2]=lubridate::parse_date_time(avocado_dataset$Date, "%m/%d/%Y")
+# Removing the white Spaces
+avocado_dataset$Region<-str_trim(avocado_dataset$Region)
+avocado_dataset$Type<-str_trim(avocado_dataset$Type)
+#Checking for missing values in the dataset - avocado_dataset
+#any(is.na(avocado_dataset))
+#Eliminating missing values completely in the dataset - avocado_dataset
+#na.omit(avocado_dataset)
+
+avocado_dataset$Region = as.factor(avocado_dataset$Region)
+avocado_dataset_usa=subset(avocado_dataset, Region == "Total U.S." | Region == "TotalUS")
+levels(avocado_dataset$Region) = c(levels(avocado_dataset$Region)[1:74], levels(avocado_dataset$Region)[74], levels(avocado_dataset$Region)[76:78])
+
+avocado_dataset_usa = avocado_dataset_usa[order(avocado_dataset_usa$Date),]
+
+# Adding Month, Year, Season - based on the month - Spring, Summer, Fall, Winter
+avocado_dataset_usa$Month <- format(as.Date(avocado_dataset_usa$Date), "%m")
+avocado_dataset_usa$Year <- format(as.Date(avocado_dataset_usa$Date), "%Y")
+
+#Season
+avocado_dataset_usa$Season <- ifelse(avocado_dataset_usa$Month %in% c("03", "04","05"), "Spring",
+                            ifelse(avocado_dataset_usa$Month %in% c("06","07" ,"08"), "Summer",
+                                  ifelse(avocado_dataset_usa$Month %in% c("09","10","11"), "Fall", "Winter")))
+
+avocado_dataset_region = subset(avocado_dataset, Region == "Great Lakes" | Region == "GreatLakes" | Region == "Midsouth" | Region == "Northeast" | Region == "Plains" | Region == "South Central" | Region == "SouthCentral" | Region == "Southeast" | Region == "West")
+
+```
+
+# Data Overview 
+
+### Metadata Details
+
+The below is the Structure of avocado_dataset_usa dataset which explains the detail of metadata.
+
+```{r RMetadata}
+## Structure of avocado_dataset_usa ##
+str(avocado_dataset_usa)
+dim(avocado_dataset)
+```
+After cleaning the data, the Dataset contains 18,249 rows and 14 Variables. 
+
+### Data Explanation
+
+The Overview of Dataset, I displayed only 10 rows as Sample. 
+
+
+```{r RDataOverview}
+## Data Overview ##
+head(avocado_dataset_usa,10)
+```
+
+
+Box, Histogram, freqpoly plot for US Average Price
+
+
+```{r USAvgPriceBoxPlot, echo=FALSE}
+
+ggplot(data = avocado_dataset_usa, mapping = aes(x = Year, y = Average_Price,colour=Year)) +
+  geom_boxplot()+ggtitle("Box Plot for US Avg Price")+labs(y="Avg Purchase Price (USD)", x = "Year (2015-2019)")
+
+ggplot(data = avocado_dataset_usa) +
+  geom_histogram(mapping = aes(x = Average_Price, fill = Type), binwidth = 0.1)+ggtitle("Histogram Plot for US Avg Price")+labs(y="Avg Purchase Price (USD)", x = "Year (2015-2019)")
+
+ggplot(data = avocado_dataset_usa, mapping = aes(x = Average_Price, colour = Type)) +
+  geom_freqpoly(binwidth = 0.1)+ggtitle("Freqpoly Plot for US Avg Price")+labs(y="Avg Purchase Price (USD)", x = "Year (2015-2019)")
+
+
+```
+
+Based on the above Boxplot, we can conclude that the average price of Avocados in United was 1.33 USD.
+
+This is higher level analysis and there is a need to deep further into the Analysis and present the results. 
+
+
+# Exploratory Data Analysis:
+
+Exploratory Data Analysis is an important process in Data Science since EDA deals with investigations or Analysis on given dataset to find the insight about Variables, patterns, Relationships, etc.
+
+
+## 1. Avocado Purchases Analysis at Type and Season Level
+
+Avocados Types : conventional, organic
+
+Seasons : Spring, Summer, Fall, Winter
+
+```{r TypeSeasonAnalysis, echo=FALSE}
+# Summary of VOlume of Avocado purchased group by Type
+TypeDetails <- avocado_dataset_usa %>% group_by(Type) %>% summarise(Mean_Volume=mean(Total_Volume))  %>% mutate(percentage_Volume=prop.table(Mean_Volume) * 100)
+# Summary of VOlume of Avocado purchased group by Type and Season
+SeasonDetails <- avocado_dataset_usa %>% group_by(Type, Season) %>% summarise(Mean_Volume=mean(Total_Volume))  %>% mutate(percentage_Volume=prop.table(Mean_Volume) * 100)
+
+pandoc.table(TypeDetails, style = 'rmarkdown')
+pandoc.table(SeasonDetails, style = 'rmarkdown')
+```
+
+#### Summary :
+          
+          1. conventional Avocados Purchased (97.21%) more than organic (2.78%)
+          2. Avocados Purchase was more in Spring Season ( Both Organic and conventional Types) 
+          3. The conventional Type of Avocados purchase in Winter (26.86%) was very close to Spring (26.90%)
+          4. Organic Type of Avocados were purchased very less in Fall (21.53%)
+
+          
+
+## 2. Price Analysis of Avocados at Type and Date Level
+
+In this Section, I want to analysis Average Price(USD) by including Date, Season,Type and Region.
+
+1. Price Analysis by Type by using density plot
+
+2. Price Analysis by Date (2015-2019) along with Type by using line plot
+
+3. Price Analysis by Date (2015-2019) along with Type by Geom_smooth plot
+
+4. Price Analysis by Date (2015-2019) along with Season - Type by using line plot
+
+```{r PriceVolumeAnalysis, echo=FALSE}
+# geom_density - Price Analysis by Type
+ggplot(avocado_dataset_usa, aes(Average_Price, fill = Type)) + 
+  geom_density(alpha = 0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  theme_minimal_hgrid(12)+ theme_minimal() + 
+  theme(plot.title=element_text(hjust=0.5), legend.position="bottom") + ggtitle("Avocado Price(USD) by Type - Density")+labs(y="Density")
+
+# geom_line - Price Analysis by Date (2015-2019) along with Type
+ggplot(data = avocado_dataset_usa, aes(x = Date, y = Average_Price, col=Type)) +
+     geom_line() +
+     facet_wrap(~ Type) + theme_minimal() + theme(legend.position="bottom")+ ggtitle("Avocado Price (USD) by Date")+labs(y="Avg Purchase Price (USD) Analysis", x = "Date")
+
+# geom_smooth - Price Analysis by Date (2015-2019) along with Type ( Geom_smooth )
+ggplot(data = avocado_dataset_usa) + 
+  geom_smooth(mapping = aes(x = Date, y = Average_Price, linetype = Type, size = Type))+ ggtitle("Avocado Purchases Analysis by Date - Type Geom Smooth")+labs(y="Avg Purchase Price (USD)", x = "Date")
+
+# geom_line() - Price Analysis by Date (2015-2019) along with Season - Type
+ggplot(data = avocado_dataset_usa, aes(x = Date, y = Average_Price, col=Type)) +
+     geom_line() + facet_wrap(~ Season) + theme_minimal() + theme(legend.position="bottom")+ ggtitle("Avg Price Analysis by Season - Type")+labs(y="Avg Purchase Price (USD)", x = "Date")
+
+ggplot(data = avocado_dataset_region , aes(x = Region, y = Average_Price))+geom_bar(stat="identity",fill="blue")+ggtitle(" Avg Price By Region")
+
+```
+
+#### Summary :
+          
+          1. Price - Organic Avocados were more expensive than conventional Avocados
+          2. The minimum (0.76 USD) and maximum (2.09 USD) price
+          3. As expected, The average price is lower in winter Season, but price slowly increases in spring through summer                   Season,then it reach the peak. 
+          4. From Fall back into the winter Season the price slowly declines
+          5. Am concluding based on the above study, Season or weather impact the avocado price
+
+
+
+
+## 3. Organic and conventional Avocados Purchase Analysis
+
+In this Section, I want to analysis Avocados Purchase by including Date, Season,Type and Region.
+
+1. Avocados Purchase Volume by Date & Type
+
+2. Avocados Purchase Volume by Date & Type with geom_line
+
+3. Avocados Purchase Volume by Season
+
+
+
+```{r VolumeAnalysis, echo=FALSE}
+
+# Two Data set for Organic and conventional
+organic_dataset <- avocado_dataset_usa %>% select(Date, Average_Price, Type, Total_Volume, Season) %>%filter(Type == "organic")
+conventional_dataset <- avocado_dataset_usa %>% select(Date, Average_Price, Type, Total_Volume, Season) %>% filter(Type == "conventional")
+
+# Volume Analysis throughout time - 2015 to 2018
+ggplot(data = avocado_dataset_usa, aes(x = Date, y = Total_Volume, col=Type)) +
+     geom_line() + facet_wrap(~ Type) + theme_minimal() + theme(legend.position="bottom")+ ggtitle("Avocado Purchases Analysis by Date - Type")+labs(y="Volume of Avocado Purchase", x = "Date")
+
+conventional_volume <- conventional_dataset %>%
+ggplot(aes(x=Date, y=Total_Volume)) + geom_bar(stat='identity', fill="#7FB3D5", color="black") + 
+theme(plot.title=element_text(hjust=0.5), plot.background=element_rect(fill="#D5D8DC")) + 
+geom_smooth(method="loess", color="red")+ggtitle("Avocado Purchases Conventional Purchases")+labs(y="Volume of Avocado Purchase", x = "Date")
+
+organic_volume <- organic_dataset %>%
+ggplot(aes(x=Date, y=Total_Volume)) + geom_bar(stat='identity', fill="#58D68D",color="black") +
+theme(plot.title=element_text(hjust=0.5), plot.background=element_rect(fill="#D5D8DC")) + geom_smooth(method="loess", color="red")+ggtitle("Avocado Purchases Organic Purchases")+labs(y="Volume of Avocado Purchase", x = "Date")
+
+
+plot_grid(conventional_volume, organic_volume, nrow=1, ncol=2)
+
+
+conventional_volume<- ggplot(data = conventional_dataset , aes(x = Season, y = Total_Volume))+geom_bar(stat="identity",fill="Red")+ggtitle("conventional Avg Price By Season")
+
+organic_volume <- ggplot(data = organic_dataset , aes(x = Season, y = Total_Volume))+geom_bar(stat="identity",fill="green")+ggtitle("organic Avg Price By Season")
+
+plot_grid(conventional_volume, organic_volume, nrow=1, ncol=2)
+
+# Volume Analysis throughout time - 2015 to 2018
+ggplot(data = avocado_dataset_region, aes(x = Region, y = Total_Volume, col=Type)) +
+     geom_line() + facet_wrap(~ Type) + theme_minimal() + theme(legend.position="bottom")+ ggtitle("Avocado Purchases Analysis by Date - Type")+labs(y="Volume of Avocado Purchase", x = "Date")
+
+ggplot(data = avocado_dataset_region , aes(x = Region, y = Total_Volume))+geom_bar(stat="identity",fill="Red")+ggtitle("Avocado Purchases By Region")
+
+
+```
+
+
+
+#### Summary :
+          
+          1. conventional Avocados were more purchased than Organic Avocados
+          2. Spring Season was the highest volume of purchases in conventional Avocados
+          3. The purchase rate was more in Organic when compared to conventional
+          4. The minimum (3,424) and maximum (63,716,144) volume of avocados sold showed
+          5. 2015-2019 Year shows that customer purchase behaviour is consistent. 
+       
+
+## 4. Linear Regression - Avocados Price significance
+
+After the detailed analysis of Avocados Price, Volume Analysis, I am curious to understand the significance of Avocados price with other variables by considering the linear regression model. 
+
+
+```{r LinerRegression}
+## Linear Regression ##
+TotalVolume_lm = lm(Average_Price~Total_Volume, data = avocado_dataset_usa)
+summary(TotalVolume_lm)
+
+SmallHass_lm =lm(Average_Price~Small_Hass, data = avocado_dataset_usa)
+summary(SmallHass_lm)
+
+LargeHass_lm =lm(Average_Price~Large_Hass, data = avocado_dataset_usa)
+summary(LargeHass_lm)
+
+XLargeHass_lm =lm(Average_Price~XLarge_Hass, data = avocado_dataset_usa)
+summary(XLargeHass_lm)
+
+TotalBags_lm =lm(Average_Price~Total_Bags, data = avocado_dataset_usa)
+summary(TotalBags_lm)
+
+SmallBags_lm =lm(Average_Price~Small_Bags, data = avocado_dataset_usa)
+summary(SmallBags_lm)
+
+LargeBags_lm =lm(Average_Price~Large_Bags, data = avocado_dataset_usa)
+summary(LargeBags_lm)
+
+XLargeBags_lm =lm(Average_Price~XLarge_Bags, data = avocado_dataset_usa)
+summary(XLargeBags_lm)
+```
+
+Based on the Linear Regression Analysis, I have found that all variables which I mentioned above had significance with Average Price. This result surprised me. I wanted to go another level to verify how the Type and Date will influence the price.
+
+
+```{r TypeLinerRegression}
+avocado_dataset_usa$Type = as.factor(avocado_dataset_usa$Type)
+Type_lm =lm(Average_Price~Type, data = avocado_dataset_usa)
+summary(Type_lm)
+anova(Type_lm)
+
+Date_lm =lm(Average_Price~Date, data = avocado_dataset_usa)
+summary(Date_lm)
+anova(Date_lm)
+
+Year_lm =lm(Average_Price~Year, data = avocado_dataset_usa)
+summary(Year_lm)
+anova(Year_lm)
+
+
+```
+
+
+As we have seen in the previous section on Analysis, for a conventional avocado, the average price is 1.10 USD but the average price for an organic avocado is 1.55 USD which is 0.45 USD more.Hence the Type, Date also has significance with the price of Avocado.
+
+As we have seen conventional avocado purchases were more than Organic, in fact Organic purchase was 2.1%. Also There is no demand for organic avocados any time of year. More avocados were purchased in the summer and warmer months than colder months which reflects in the linear model regression output. Hence Date and Season also had significance with the Price of Avocado.
+
+
+```{r RegionLinerRegression}
+avocado_dataset_region = subset(avocado_dataset, Region == "Great Lakes" | Region == "GreatLakes" | Region == "Midsouth" | Region == "Northeast" | Region == "Plains" | Region == "South Central" | Region == "SouthCentral" | Region == "Southeast" | Region == "West")
+for(i in 1:nrow(avocado_dataset_region)){
+  if(avocado_dataset_region$Region[i]=="Great Lakes"){
+    avocado_dataset_region$Region[i]="GreatLakes"
+  }else if(avocado_dataset_region$Region[i]=="South Central"){
+    avocado_dataset_region$Region[i]="SouthCentral"
+  }
+}
+Regionlm =lm(Average_Price~Region, data = avocado_dataset_region)
+summary(Regionlm)
+anova(Regionlm)
+```
+
+The only Analysis which I felt less was related to Region and I believe that Region makes difference with Avocado prices even though same Date/Season.
+
+If I compare Northeast with Great Lake region, 0.23 USD more in Northeast but South central price was cheaper (0.20 USD) than
+Great Lake. P-Values for Southeast and West were higher than 0.05, Hence Southeast and West did not show significance.This shows that average prices of avocados would be higher in that region, but maybe due to warmth in West, avocados can be grown and sold cheaper. when we look at the anova table, the categorical variables show that Region is also significant.
+
+
+## 5. Multiple Regression - Avocados Price significance
+
+In the Previous Section, I ran the simple linear model for all variables with prices of Avocado. The last step is to run all the variables against the price of Avocado through Multiple Regression.
+
+```{r MultipleRegression}
+## Multiple Regression ##
+multiRegmodel = lm(Average_Price~Total_Volume+Type+Region, data = avocado_dataset_region)
+multiRegmodel_output = step(multiRegmodel,direction="backward")
+summary(multiRegmodel_output)
+```
+
+When we look at the Multiple R-squared was 0.6602 which means 66.02% variability with prices. Hence this model is a good fit one.
+
+
+## 6. KNN Regression - Avocados Price significance
+
+I wanted to try KNN Regression to see how Avocados Price significant with Volume. This Regression helps to undersand the nearest average price for certain Volume Groups.
+
+
+```{r KNNRegression}
+## KNN Regression ##
+
+#install.packages("FNN")
+set.seed(1974)
+
+knn3.avocado_dataset <- knn.reg(train=avocado_dataset_region[c("Average_Price")],   
+                     y=avocado_dataset_region$Total_Volume, 
+                     test= data.frame(Average_Price=seq(0,3)),
+                     k=3) 
+
+plot(avocado_dataset_region$Average_Price, avocado_dataset_region$Total_Volume) #adding the scatter for BMI and BMD
+lines(seq(0,3), knn3.avocado_dataset$pred)  
+
+```
+
+
+# Verify the Model - qqnorm and qqline
+
+```{r modelverify}
+qqnorm(resid(multiRegmodel_output))
+qqline(resid(multiRegmodel_output))
+```
+
+I wanted to verify the model was good fit by using qqnorm and qqline method. We can see the plots which again confirms that the model is a good fit.
+
+
+# Conclusion - Summary of Analysis
+
+
+I had seen that there was a linear relationship between Total Volume and Average Price. Also other entities like Date,Region, etc. But we can not increase the price for Revenue growth, since other variables impact the price determination. 
+
+As per Law of economics, supply and demand determines the price but in our case, we had seen there were more supply and less demand, This is one of the study points to handle the price fix of Avocado.
+
+This project empowered me to study the entire Avocado business model along with R Project technical expertise and this analysis gave me the insight about Sales Analytics which we can extend to other food items or entities.
+
+We can leverage this project analysis further to find the Competition around Avocado and Avocado products and increase the predictive model. Also we can extend this Analysis to entire world ( my project focus only USA)
+
+Finally I wanted to conclude that Organic Avocado is costlier than conventional and consistently price was increasing when Fall starts. So the best time for Avacodo purchase is before Fall Season.
+
+
+
+# References:
+
+1. R for Everyone by by Jared P. Lander, Pearson Education, 2017. 2nd Edition
+
+2. R for Data Science by Hadley Wickham, Garrett Grolemund, O'Reilly Publisher(2016). - ISBN: 9781491910399
+    https://r4ds.had.co.nz/
+
+3. Avocado Prices by Justin Kiggins, Kaggle
+    https://www.kaggle.com/neuromusic/avocado-prices
+
+4. Avocado Market Research by R-Bloggers
+    https://www.r-bloggers.com/2018/09/avocado-market-research/
+
+5. Millennials’ Favorite Fruit: Forecasting Avocado Prices with ARIMA Models by Sean Holland, Medium
+         https://towardsdatascience.com/millennials-favorite-fruit-forecasting-avocado-prices-with-arima-models-5b46e4e0e914
+
+6. Avocado Prices: Pattern Recognition Analysis by Janio Martinez, Kaggle
+      https://www.kaggle.com/janiobachmann/price-of-avocados-pattern-recognition-analysis
+
+7. Predicting avocado prices_Kaggle dataset by Joan Claverol, Rpubs
+      https://rpubs.com/JoanClaverol/532659
+
+8. MLR_Avacado by Abhishek, Rpubs
+      https://rpubs.com/abhiisinghh/423833
+
+9. What is Exploratory Data Analysis? by Prasad Patil, Medium
+      https://towardsdatascience.com/exploratory-data-analysis-8fc1cb20fd15
+
+10. http://www.hassavocadoboard.com/retail/volume-and-price-data
+
+
